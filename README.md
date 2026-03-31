@@ -40,3 +40,27 @@ Environment variables:
 - `LIFI_INTEGRATOR` — optional `integrator` query param
 
 Requirements: `bash`, `curl`, and **Node.js 18+** (`node` on `PATH`).
+
+### Comparing Relay vs LI.FI
+
+Both matrices use the same **36 cells** (fixed BZZ out via `BZZ_PRICE_USD` when Relay is in default **`RELAY_TRADE_TYPE=EXACT_OUTPUT`**, matching LI.FI **`toAmount`**).
+
+1. Capture two logs (any filenames), then:
+
+   ```bash
+   node compare-bzz-matrices.mjs relay-routes/last-matrix-run.txt lifi-routes/last-matrix-run.txt \
+     --md compare-relay-lifi.md --csv compare-relay-lifi.csv
+   ```
+
+   The script prints **success counts**, **both / Relay-only / LI.FI-only / neither**, and which side had more OK cells. The Markdown file includes a full side-by-side table plus OK/✗ summary grids.
+
+2. Or run both probes and compare in one go (~72 quote requests):
+
+   ```bash
+   chmod +x run-compare-matrices.sh
+   ./run-compare-matrices.sh
+   ```
+
+   Outputs are gitignored: `last-matrix-*-for-compare.txt`, `compare-relay-lifi.md`, `compare-relay-lifi.csv`.
+
+**Note:** “Better” here means **more cells with HTTP 200 + OK** for the same notional setup. Relay **`EXACT_INPUT`** is not comparable to LI.FI **`toAmount`** without a separate LI.FI `fromAmount` flow—keep `EXACT_OUTPUT` for a fair side-by-side.

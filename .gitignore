@@ -21,3 +21,6 @@ Thumbs.db
 # Local matrix run outputs
 **/last-matrix-run*.txt
 **/last-matrix-table.*
+**/last-matrix-*-for-compare.txt
+compare-relay-lifi.md
+compare-relay-lifi.csv
