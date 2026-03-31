@@ -1,0 +1,16 @@
+{
+  "id": "a8dc011a-f52d-4492-9e99-21de64b5453a",
+  "type": "lifi",
+  "tool": "1inch",
+  "action": {
+    "fromAmount": "1000000",
+    "fromToken": { "symbol": "USDC", "decimals": 6 },
+    "toToken": { "symbol": "BZZ", "decimals": 16 }
+  },
+  "estimate": {
+    "fromAmount": "1000000",
+    "toAmount": "10000000000000000000",
+    "fromAmountUSD": "1",
+    "toAmountUSD": "0.98"
+  }
+}
