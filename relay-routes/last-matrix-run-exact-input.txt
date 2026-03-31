@@ -1,0 +1,90 @@
+# Relay BZZ-on-Gnosis quote matrix | API=https://api.relay.link | user=0x03508bb71268bba25ecacc8f620e01866650532c
+# tradeType=EXACT_INPUT | amount=spend on origin (native wei or stable 6 decimals) ≈ target_usd USD notional
+# Columns: origin_chain | origin_token | target_usd | http | summary
+
+ethereum	NATIVE	0.1	400	ERROR NO_SWAP_ROUTES_FOUND no routes found
+ethereum	NATIVE	1	200	ok op=swap in=ETH 0.000476828300344026 ($1.000000) -> out=BZZ 10.5909328721810889 ($0.981524)
+requestId=0x9fcfba4b6b86a0f63f9285855d4c6f753e4d76c603e39497863e9f89e0e6222f
+status_path=/intents/status/v3?requestId=0x9fcfba4b6b86a0f63f9285855d4c6f753e4d76c603e39497863e9f89e0e6222f
+ethereum	NATIVE	10	200	ok op=swap in=ETH 0.004768283003440262 ($10.000000) -> out=BZZ 107.8532461917122454 ($9.995397)
+requestId=0x98c04e4efc2a69cf400477b2193a866e1161590a11d7e6115f554cd76736e6f3
+status_path=/intents/status/v3?requestId=0x98c04e4efc2a69cf400477b2193a866e1161590a11d7e6115f554cd76736e6f3
+ethereum	NATIVE	100	200	ok op=swap in=ETH 0.047682830034402616 ($100.000000) -> out=BZZ 1071.4467005083473123 ($99.297293)
+requestId=0x8aaf959cdbc68f533b5e22fe4ea74b2866d354a7b2aca49dc483edf41211540e
+status_path=/intents/status/v3?requestId=0x8aaf959cdbc68f533b5e22fe4ea74b2866d354a7b2aca49dc483edf41211540e
+ethereum	USDC	0.1	400	ERROR NO_SWAP_ROUTES_FOUND no routes found
+ethereum	USDC	1	200	ok op=swap in=USDC 1.0 ($0.999660) -> out=BZZ 10.5880970554512672 ($0.981261)
+requestId=0x4aec333470cae1ca0414e4024bbc8dce57b5e6bcc28a73284ea89f75e86b6f36
+status_path=/intents/status/v3?requestId=0x4aec333470cae1ca0414e4024bbc8dce57b5e6bcc28a73284ea89f75e86b6f36
+ethereum	USDC	10	400	ERROR NO_SWAP_ROUTES_FOUND no routes found
+ethereum	USDC	100	200	ok op=swap in=USDC 100.0 ($99.966000) -> out=BZZ 1071.0663573654219868 ($99.262045)
+requestId=0x2417a583aebe9f3cc0b919a1e266b6d9a9342dbe178a8f3c5ab409e4c309e308
+status_path=/intents/status/v3?requestId=0x2417a583aebe9f3cc0b919a1e266b6d9a9342dbe178a8f3c5ab409e4c309e308
+ethereum	USDT	0.1	400	ERROR NO_SWAP_ROUTES_FOUND no routes found
+ethereum	USDT	1	400	ERROR NO_SWAP_ROUTES_FOUND no routes found
+ethereum	USDT	10	400	ERROR NO_SWAP_ROUTES_FOUND no routes found
+ethereum	USDT	100	200	ok op=swap in=USDT 100.0 ($99.966000) -> out=BZZ 1070.5104443781165887 ($99.210525)
+requestId=0x45f6f9bc7423bee6b95b377867aa1dddfc9e49482fd5ddad76c9662ee2b254ed
+status_path=/intents/status/v3?requestId=0x45f6f9bc7423bee6b95b377867aa1dddfc9e49482fd5ddad76c9662ee2b254ed
+base	NATIVE	0.1	200	ok op=swap in=ETH 0.000047682830034403 ($0.100000) -> out=BZZ 0.8548870083960232 ($0.079227)
+requestId=0x81a22a2fae0a28d3de8da449ae24f1d34421c66666121181694c81b199640855
+status_path=/intents/status/v3?requestId=0x81a22a2fae0a28d3de8da449ae24f1d34421c66666121181694c81b199640855
+base	NATIVE	1	200	ok op=swap in=ETH 0.000476828300344026 ($1.000000) -> out=BZZ 10.5926978246231905 ($0.981688)
+requestId=0x40ebbd9168a3941e400b6d75e1252152b02e52f0ce59790477b6809f8ebbe5b7
+status_path=/intents/status/v3?requestId=0x40ebbd9168a3941e400b6d75e1252152b02e52f0ce59790477b6809f8ebbe5b7
+base	NATIVE	10	200	ok op=swap in=ETH 0.004768283003440262 ($10.000000) -> out=BZZ 107.8470964322530604 ($9.994827)
+requestId=0xfaeeb65140e87b7eb737ecd8a7f5b249d24aab175173b5c5c9fb6c77ed5c94a5
+status_path=/intents/status/v3?requestId=0xfaeeb65140e87b7eb737ecd8a7f5b249d24aab175173b5c5c9fb6c77ed5c94a5
+base	NATIVE	100	200	ok op=swap in=ETH 0.047682830034402616 ($100.000000) -> out=BZZ 1071.2420189167044322 ($99.278324)
+requestId=0x4dc3e98f09e7f08014619e0646a0a5006c0ae811f2fc6562d4bbb646b2c245f7
+status_path=/intents/status/v3?requestId=0x4dc3e98f09e7f08014619e0646a0a5006c0ae811f2fc6562d4bbb646b2c245f7
+base	USDC	0.1	200	ok op=swap in=USDC 0.1 ($0.099970) -> out=BZZ 0.8647527142217052 ($0.080142)
+requestId=0x24f00461d6dc915e06b27cf59c169ec0076d73c451a56b2b564b97d9fc1250e0
+status_path=/intents/status/v3?requestId=0x24f00461d6dc915e06b27cf59c169ec0076d73c451a56b2b564b97d9fc1250e0
+base	USDC	1	400	ERROR NO_SWAP_ROUTES_FOUND no routes found
+base	USDC	10	200	ok op=swap in=USDC 10.0 ($9.996970) -> out=BZZ 107.8328177537004602 ($9.993504)
+requestId=0x6ff54571e0d92e6e8b8a040b600cb9ff3541c8f52a92581d4d9c0d71e41e6411
+status_path=/intents/status/v3?requestId=0x6ff54571e0d92e6e8b8a040b600cb9ff3541c8f52a92581d4d9c0d71e41e6411
+base	USDC	100	200	ok op=swap in=USDC 100.0 ($99.969700) -> out=BZZ 1071.0713303262118143 ($99.262506)
+requestId=0x9b36168442a7d4df414600316095438f0bc2e542e1c30f9f425e00bdf07616fa
+status_path=/intents/status/v3?requestId=0x9b36168442a7d4df414600316095438f0bc2e542e1c30f9f425e00bdf07616fa
+base	USDT	0.1	200	ok op=swap in=USDT 0.1 ($0.099970) -> out=BZZ 0.8587208824270738 ($0.079583)
+requestId=0x7920581729b4863985287722498988f261ad7fc42bbf73bf50b0eba6be34084c
+status_path=/intents/status/v3?requestId=0x7920581729b4863985287722498988f261ad7fc42bbf73bf50b0eba6be34084c
+base	USDT	1	200	ok op=swap in=USDT 1.0 ($0.999697) -> out=BZZ 10.537262400513299 ($0.976550)
+requestId=0x00a2ccc6e99fdbcebc7a8261339f33e3ce06e3074d475ac1db89cc97ae424d3d
+status_path=/intents/status/v3?requestId=0x00a2ccc6e99fdbcebc7a8261339f33e3ce06e3074d475ac1db89cc97ae424d3d
+base	USDT	10	200	ok op=swap in=USDT 10.0 ($9.996970) -> out=BZZ 107.2220731540252345 ($9.936903)
+requestId=0xd30650e5ea0a2fcabfc6e801d18c9cb558238ce1ec3971768440908a9da02cd6
+status_path=/intents/status/v3?requestId=0xd30650e5ea0a2fcabfc6e801d18c9cb558238ce1ec3971768440908a9da02cd6
+base	USDT	100	200	ok op=swap in=USDT 100.0 ($99.969700) -> out=BZZ 1065.0215708960955676 ($98.701839)
+requestId=0xe6e8a47628d121de3db632780d7ef0a6347675a82b7d440e0baff36911313b5c
+status_path=/intents/status/v3?requestId=0xe6e8a47628d121de3db632780d7ef0a6347675a82b7d440e0baff36911313b5c
+gnosis	NATIVE	0.1	200	ok op=swap in=xDAI 0.100005300280914896 ($0.100000) -> out=BZZ 1.0842571450727493 ($0.100485)
+requestId=0x1d36e4ddf3fd8190046de41082d3d6aed4423ec9bff48786d174cb9d28894d68
+status_path=/intents/status/v3?requestId=0x1d36e4ddf3fd8190046de41082d3d6aed4423ec9bff48786d174cb9d28894d68
+gnosis	NATIVE	1	400	ERROR NO_SWAP_ROUTES_FOUND no routes found
+gnosis	NATIVE	10	200	ok op=swap in=xDAI 10.000530028091488256 ($10.000000) -> out=BZZ 108.357410343607873 ($10.042121)
+requestId=0xebc2079d61f775690c48b451355ada595dc67233bd9f1efe4924ef04174b0c71
+status_path=/intents/status/v3?requestId=0xebc2079d61f775690c48b451355ada595dc67233bd9f1efe4924ef04174b0c71
+gnosis	NATIVE	100	200	ok op=swap in=xDAI 100.005300280914886656 ($100.000000) -> out=BZZ 1074.8267240405633073 ($99.610540)
+requestId=0x018b52c7247ec8dfdd9ee4a0ed054d746aca36554f8b215450135455d1930400
+status_path=/intents/status/v3?requestId=0x018b52c7247ec8dfdd9ee4a0ed054d746aca36554f8b215450135455d1930400
+gnosis	USDC	0.1	200	ok op=swap in=USDC 0.1 ($0.099970) -> out=BZZ 1.0845198081440067 ($0.100509)
+requestId=0x61044cf3aac8de156fff992c1922ef5a78cf14f17571c781dc5ca626eb0f9f23
+status_path=/intents/status/v3?requestId=0x61044cf3aac8de156fff992c1922ef5a78cf14f17571c781dc5ca626eb0f9f23
+gnosis	USDC	1	200	ok op=swap in=USDC 1.0 ($0.999697) -> out=BZZ 10.8433828171145961 ($1.004920)
+requestId=0xc702ca4306d334bd01e50488d67037f90e861fb002137ab85d5cbc01b29feb31
+status_path=/intents/status/v3?requestId=0xc702ca4306d334bd01e50488d67037f90e861fb002137ab85d5cbc01b29feb31
+gnosis	USDC	10	400	ERROR NO_SWAP_ROUTES_FOUND no routes found
+gnosis	USDC	100	200	ok op=swap in=USDC 100.0 ($99.969700) -> out=BZZ 1074.0734192374677448 ($99.540727)
+requestId=0x641dd0f48b45a0b74d48550417e642f396c0641d95a2bffd28353676453be7fb
+status_path=/intents/status/v3?requestId=0x641dd0f48b45a0b74d48550417e642f396c0641d95a2bffd28353676453be7fb
+gnosis	USDT	0.1	400	ERROR NO_SWAP_ROUTES_FOUND no routes found
+gnosis	USDT	1	400	ERROR NO_SWAP_ROUTES_FOUND no routes found
+gnosis	USDT	10	200	ok op=swap in=USDT 10.0 ($9.996970) -> out=BZZ 108.283083328981366 ($10.035233)
+requestId=0x5ccfb0c107ad340d179b15f460e1887d3aa9faf78e674b784d965d9a77359999
+status_path=/intents/status/v3?requestId=0x5ccfb0c107ad340d179b15f460e1887d3aa9faf78e674b784d965d9a77359999
+gnosis	USDT	100	200	ok op=swap in=USDT 100.0 ($99.969700) -> out=BZZ 1074.4423022882915967 ($99.574914)
+requestId=0x50bf6155c7c6c854a4681dcd3d3febfbebca9e39e3b0f1c9968d852e8beb64e3
+status_path=/intents/status/v3?requestId=0x50bf6155c7c6c854a4681dcd3d3febfbebca9e39e3b0f1c9968d852e8beb64e3

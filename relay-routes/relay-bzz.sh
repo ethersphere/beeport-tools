@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Relay.link quote matrix: routes into BZZ on Gnosis (chain 100).
-# Matrix uses tradeType EXACT_OUTPUT: amount is BZZ to receive (16 decimals). Target USD
-# tiers ($0.1 / $1 / $10 / $100) map to BZZ via env BZZ_PRICE_USD (default 0.1 → $0.10/BZZ).
+# Matrix: env RELAY_TRADE_TYPE=EXACT_OUTPUT (default) or EXACT_INPUT. EXACT_OUTPUT uses BZZ
+# out amount (16 decimals) from target USD via BZZ_PRICE_USD. EXACT_INPUT spends ~target_usd
+# on origin (stables: 6 decimals; native: wei from Relay token price).
 # Docs: https://docs.relay.link/references/api/get-quote-v2
 #       https://docs.relay.link/references/api/get-intents-status-v3
 #
@@ -9,13 +10,19 @@
 #   ./relay-bzz.sh matrix [--raw-dir DIR] [--user ADDR]
 #   ./relay-bzz.sh status <requestId>
 #   ./relay-bzz.sh price-native <chainId>   # helper: USD price for native gas token
+#
+# Matrix: one line per cell (OK / FAIL …). RELAY_MATRIX_VERBOSE=1 adds swap details + requestId + status_path.
 
 set -u
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+RELAY_JS="${RELAY_JS:-${SCRIPT_DIR}/relay-cli-helpers.mjs}"
 
 RELAY_API="${RELAY_API:-https://api.relay.link}"
 # Optional pause between quote calls (seconds, floating point) to reduce flaky NO_SWAP_ROUTES_FOUND under load
 RELAY_QUOTE_DELAY="${RELAY_QUOTE_DELAY:-0.15}"
-# Implied BZZ notional for matrix: target USD / BZZ_PRICE_USD → amount in 16-decimal base units for EXACT_OUTPUT
+RELAY_TRADE_TYPE="${RELAY_TRADE_TYPE:-EXACT_OUTPUT}"
+# Implied BZZ notional for EXACT_OUTPUT matrix: target USD / BZZ_PRICE_USD → 16-decimal BZZ amount
 BZZ_PRICE_USD="${BZZ_PRICE_USD:-0.1}"
 DEST_CHAIN=100
 # BZZ on Gnosis — Relay resolves metadata (16 decimals) even if not in curated list
@@ -59,38 +66,42 @@ price_native_usd() {
 native_amount_for_usd() {
   # Prints wei (integer string) for ~usd dollars of native token on chainId
   local cid="$1" usd="$2"
-  python3 -c "
-import json, sys, urllib.request, ssl
-cid = int(sys.argv[1])
-usd = float(sys.argv[2])
-base = sys.argv[3]
-addr = sys.argv[4]
-ctx = ssl.create_default_context()
-url = f'{base}/currencies/token/price?chainId={cid}&address={addr}'
-with urllib.request.urlopen(url, context=ctx) as r:
-    price = json.load(r)['price']
-wei = int(round((usd / price) * 10**18))
-print(wei)
-" "$cid" "$usd" "$RELAY_API" "$NATIVE"
+  node "$RELAY_JS" native-wei "$cid" "$usd" "$RELAY_API" "$NATIVE"
 }
 
 stable_amount_for_usd() {
   # USDC/USDT: 6 decimals (kept for reference / manual quotes)
   local usd="$1"
-  python3 -c "print(int(round(float('$usd') * 10**6)))"
+  node "$RELAY_JS" stable-amount "$usd"
 }
 
 # BZZ smallest units (16 decimals) for EXACT_OUTPUT matching ~usd dollars at BZZ_PRICE_USD per 1 BZZ
 bzz_output_amount_for_target_usd() {
   local usd="$1"
-  python3 -c "
-from decimal import Decimal
-u = Decimal('${usd}')
-p = Decimal('${BZZ_PRICE_USD}')
-bzz = u / p
-amt = int(bzz * Decimal(10 ** 16))
-print(amt)
-"
+  node "$RELAY_JS" bzz-out-amount "$usd" "$BZZ_PRICE_USD"
+}
+
+# Amount string for matrix row: depends on RELAY_TRADE_TYPE and origin token class
+matrix_amount_for_cell() {
+  local oc="$1" ocur_kind="$2" usd="$3" oaddr
+  case "$RELAY_TRADE_TYPE" in
+    EXACT_INPUT)
+      case "$ocur_kind" in
+        NATIVE)
+          native_amount_for_usd "$oc" "$usd"
+          ;;
+        USDC|USDT)
+          stable_amount_for_usd "$usd"
+          ;;
+        *)
+          echo "0"
+          ;;
+      esac
+      ;;
+    *)
+      bzz_output_amount_for_target_usd "$usd"
+      ;;
+  esac
 }
 
 quote_json() {
@@ -102,15 +113,7 @@ quote_json() {
   dcur="$5"
   amount="$6"
   tt="${7:-EXACT_OUTPUT}"
-  python3 -c "import json; print(json.dumps({
-    'user': '$user',
-    'originChainId': int('$ocid'),
-    'destinationChainId': int('$dcid'),
-    'originCurrency': '$ocur'.lower(),
-    'destinationCurrency': '$dcur'.lower(),
-    'amount': str(int('$amount')),
-    'tradeType': '$tt',
-  }))"
+  node "$RELAY_JS" quote-json "$user" "$ocid" "$dcid" "$ocur" "$dcur" "$amount" "$tt"
 }
 
 do_quote() {
@@ -124,44 +127,11 @@ do_quote() {
 
 summarize_quote() {
   local file="$1"
-  python3 -c "
-import json, sys
-path = sys.argv[1]
-with open(path) as f:
-    raw = f.read()
-try:
-    d = json.loads(raw)
-except json.JSONDecodeError:
-    print('ERROR non-json body', raw[:200].replace(chr(10), ' '))
-    sys.exit(0)
-if d.get('message'):
-    print('ERROR', d.get('errorCode') or '', d.get('message')[:200])
-    sys.exit(0)
-det = d.get('details') or {}
-cin = det.get('currencyIn') or {}
-cout = det.get('currencyOut') or {}
-op = det.get('operation')
-rid = None
-for s in d.get('steps') or []:
-    if s.get('requestId'):
-        rid = s['requestId']
-        break
-check = None
-for s in d.get('steps') or []:
-    for it in s.get('items') or []:
-        c = it.get('check') or {}
-        if c.get('endpoint'):
-            check = c['endpoint']
-            break
-    if check:
-        break
-sym_in = (cin.get('currency') or {}).get('symbol')
-sym_out = (cout.get('currency') or {}).get('symbol')
-print(f\"ok op={op} in={sym_in} {cin.get('amountFormatted')} (\${cin.get('amountUsd')}) -> out={sym_out} {cout.get('amountFormatted')} (\${cout.get('amountUsd')})\")
-print(f\"requestId={rid}\")
-if check:
-    print(f\"status_path={check}\")
-" "$file"
+  if [[ "${RELAY_MATRIX_VERBOSE:-}" == "1" ]]; then
+    node "$RELAY_JS" summarize-quote "$file" verbose
+  else
+    node "$RELAY_JS" summarize-quote "$file" compact
+  fi
 }
 
 cmd_matrix() {
@@ -187,7 +157,11 @@ cmd_matrix() {
   fi
 
   echo "# Relay BZZ-on-Gnosis quote matrix | API=${RELAY_API} | user=${USER_ADDR}"
-  echo "# tradeType=EXACT_OUTPUT | amount=BZZ out (16 decimals) | implied BZZ notional: target_usd / BZZ_PRICE_USD (BZZ_PRICE_USD=${BZZ_PRICE_USD})"
+  if [[ "$RELAY_TRADE_TYPE" == "EXACT_INPUT" ]]; then
+    echo "# tradeType=EXACT_INPUT | amount=spend on origin (native wei or stable 6 decimals) ≈ target_usd USD notional"
+  else
+    echo "# tradeType=EXACT_OUTPUT | amount=BZZ out (16 decimals) | implied BZZ notional: target_usd / BZZ_PRICE_USD (BZZ_PRICE_USD=${BZZ_PRICE_USD})"
+  fi
   echo "# Columns: origin_chain | origin_token | target_usd | http | summary"
   echo ""
 
@@ -199,8 +173,8 @@ cmd_matrix() {
     oname=$(chain_name "$oc")
     # Same BZZ output size for NATIVE/USDC/USDT: maps target USD to BZZ via BZZ_PRICE_USD
     for usd in "${dollars[@]}"; do
-      amt=$(bzz_output_amount_for_target_usd "$usd")
-      payload=$(quote_json "$USER_ADDR" "$oc" "$DEST_CHAIN" "$NATIVE" "$BZZ_GNOSIS" "$amt")
+      amt=$(matrix_amount_for_cell "$oc" "NATIVE" "$usd")
+      payload=$(quote_json "$USER_ADDR" "$oc" "$DEST_CHAIN" "$NATIVE" "$BZZ_GNOSIS" "$amt" "$RELAY_TRADE_TYPE")
       tmp=$(mktemp)
       code=$(do_quote "$payload" "$tmp")
       printf "%s\t%s\t%s\t%s\t" "$oname" "NATIVE" "$usd" "$code"
@@ -216,8 +190,8 @@ cmd_matrix() {
     oid=$(usdc_for_chain "$oc")
     if [[ -n "$oid" ]]; then
       for usd in "${dollars[@]}"; do
-        amt=$(bzz_output_amount_for_target_usd "$usd")
-        payload=$(quote_json "$USER_ADDR" "$oc" "$DEST_CHAIN" "$oid" "$BZZ_GNOSIS" "$amt")
+        amt=$(matrix_amount_for_cell "$oc" "USDC" "$usd")
+        payload=$(quote_json "$USER_ADDR" "$oc" "$DEST_CHAIN" "$oid" "$BZZ_GNOSIS" "$amt" "$RELAY_TRADE_TYPE")
         tmp=$(mktemp)
         code=$(do_quote "$payload" "$tmp")
         printf "%s\t%s\t%s\t%s\t" "$oname" "USDC" "$usd" "$code"
@@ -234,8 +208,8 @@ cmd_matrix() {
     oid=$(usdt_for_chain "$oc")
     if [[ -n "$oid" ]]; then
       for usd in "${dollars[@]}"; do
-        amt=$(bzz_output_amount_for_target_usd "$usd")
-        payload=$(quote_json "$USER_ADDR" "$oc" "$DEST_CHAIN" "$oid" "$BZZ_GNOSIS" "$amt")
+        amt=$(matrix_amount_for_cell "$oc" "USDT" "$usd")
+        payload=$(quote_json "$USER_ADDR" "$oc" "$DEST_CHAIN" "$oid" "$BZZ_GNOSIS" "$amt" "$RELAY_TRADE_TYPE")
         tmp=$(mktemp)
         code=$(do_quote "$payload" "$tmp")
         printf "%s\t%s\t%s\t%s\t" "$oname" "USDT" "$usd" "$code"
@@ -256,7 +230,7 @@ cmd_status() {
     echo "usage: $0 status <requestId>" >&2
     exit 1
   fi
-  curl -sS "${RELAY_API}/intents/status/v3?requestId=${rid}" | python3 -m json.tool
+  curl -sS "${RELAY_API}/intents/status/v3?requestId=${rid}" | node "$RELAY_JS" json-pretty
 }
 
 cmd_price_native() {
@@ -265,7 +239,7 @@ cmd_price_native() {
     echo "usage: $0 price-native <chainId>" >&2
     exit 1
   fi
-  price_native_usd "$cid" | python3 -m json.tool
+  price_native_usd "$cid" | node "$RELAY_JS" json-pretty
 }
 
 case "${1:-}" in
@@ -284,7 +258,7 @@ case "${1:-}" in
   *)
     echo "Relay BZZ (Gnosis) quote helper" >&2
     echo "" >&2
-    echo "  $0 matrix [--raw-dir DIR] [--user 0x...]   # EXACT_OUTPUT BZZ; target \$0.1..\$100 at BZZ_PRICE_USD (env, default 0.1)" >&2
+    echo "  $0 matrix [--raw-dir DIR] [--user 0x...]   # RELAY_TRADE_TYPE=EXACT_OUTPUT|EXACT_INPUT; tiers \$0.1..\$100" >&2
     echo "  $0 status <requestId>                       # GET /intents/status/v3" >&2
     echo "  $0 price-native <chainId>                  # native USD price (for debugging)" >&2
     exit 1

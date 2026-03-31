@@ -14,6 +14,12 @@ Tools around Relay’s quote and intent APIs for routes into **BZZ on Gnosis** (
 |------|--------|
 | `relay-bzz.sh` | Run a **quote matrix** across chains/tokens and USD tiers, check **intent status** for a `requestId`, or fetch **native token USD** price for gas estimates. |
 | `intent-status.sh` | Poll **`/intents/status/v3`** for a given `requestId` (pretty-printed JSON). |
-| `format-matrix-log.py` | Turn `relay-bzz.sh` matrix log output into **Markdown** and **CSV** tables for review or sharing. |
+| `format-matrix-log.mjs` | Turn `relay-bzz.sh` matrix log output into **Markdown** and **CSV** tables for review or sharing (`node format-matrix-log.mjs [last-matrix-run.txt]`). |
 
-Requirements: `bash`, `curl`, and `python3` where noted. See comments at the top of each script for usage and environment variables (e.g. `RELAY_API`, `RELAY_QUOTE_DELAY`, `BZZ_PRICE_USD`).
+Environment variables (see script headers for details):
+
+- `RELAY_API`, `RELAY_QUOTE_DELAY`, `BZZ_PRICE_USD` (EXACT_OUTPUT sizing)
+- `RELAY_TRADE_TYPE` — `EXACT_OUTPUT` (default) or `EXACT_INPUT`. Relay often returns `NO_SWAP_ROUTES_FOUND` for exact-out into BZZ while exact-in quotes succeed for the same chains and tokens; Beeport-style flows can **quote with `EXACT_INPUT`** (spend a USD notional) when exact-out fails, or drive UX from “you pay ~$X” instead of a fixed BZZ out amount.
+- `RELAY_MATRIX_VERBOSE=1` — matrix prints full swap summary plus `requestId=` / `status_path=` lines; default is one line per cell (`OK` or `FAIL …` only).
+
+Requirements: `bash`, `curl`, and **Node.js 18+** (`node` on `PATH`) for `relay-cli-helpers.mjs` and `format-matrix-log.mjs`.
