@@ -96,3 +96,30 @@ curl -sS "https://api.sushi.com/quote/v7/100?tokenIn=0xEeeeeEeeeEeEeeEeEeEeeEEEe
 Env: `SUSHI_API`, `SUSHI_QUOTE_DELAY`, `SUSHI_MAX_SLIPPAGE`, `SUSHI_CHAINS`, `SUSHI_MATRIX_VERBOSE=1`, `BZZ_TOKEN_ETHEREUM`, `BZZ_TOKEN_BASE`.
 
 Sample **Gnosis** run where all 12 cells succeeded: `sushi-routes/examples/gnosis-matrix-sample-run.txt`.
+
+### `openocean-routes/`
+
+Probes **[OpenOcean Swap API v4 `reverseQuote`](https://docs.openocean.finance/docs/swap-api/advanced-usage/exact-out)** for **same-chain** swaps with **fixed BZZ out** (16 decimals). **`inTokenAddress`** is BZZ (what you receive); **`outTokenAddress`** is the pay asset (native / USDC / USDT); **`amountDecimals`** is the BZZ amount in smallest units. A successful response includes **`reverseAmount`** (pay token in) for building `/swap` ([exact-out flow](https://docs.openocean.finance/docs/swap-api/advanced-usage/exact-out)).
+
+**Not cross-chain.** Default chain code is **`xdai`** (Gnosis). For **`eth`** or **`base`**, set **`BZZ_TOKEN_ETH`** / **`BZZ_TOKEN_BASE`** to a BZZ address valid on that chain (otherwise those chains are skipped). OpenOcean path segments use string codes such as `xdai`, `eth`, `base` (see [supported chains](https://docs.openocean.finance/docs/overview/supported-chains)).
+
+| File | Purpose |
+|------|--------|
+| `openocean-bzz.sh` | `matrix` — NATIVE / USDC / USDT × USD tiers (via `BZZ_PRICE_USD`); `pretty` — format saved JSON. |
+| `run-matrix.mjs` | Same matrix with Node `fetch`: stdout by default; optional second arg saves a copy. |
+| `openocean-cli-helpers.mjs` | BZZ tier amounts, `gasPrice`, `reverseQuote` URL builder, response summarizer. |
+| `format-matrix-log.mjs` | Markdown + CSV from a matrix log (detects OpenOcean header). |
+
+Run locally:
+
+```bash
+cd openocean-routes
+./openocean-bzz.sh matrix
+node run-matrix.mjs
+node run-matrix.mjs last-matrix-run.txt
+node format-matrix-log.mjs last-matrix-run.txt
+```
+
+Env: `OPENOCEAN_API`, `OPENOCEAN_QUOTE_DELAY`, `BZZ_PRICE_USD`, `OPENOCEAN_SLIPPAGE`, `OPENOCEAN_CHAINS`, `OPENOCEAN_GAS_PRICE_DECIMALS` (optional; otherwise fetched from `/v4/{chain}/gasPrice`), `OPENOCEAN_MATRIX_VERBOSE=1`, `BZZ_TOKEN_ETH`, `BZZ_TOKEN_BASE`.
+
+Requirements: `bash`, `curl`, **Node.js 18+**.
