@@ -1,0 +1,19 @@
+# Sushi Quote v7 → BZZ matrix | API=https://api.sushi.com | chains=100
+# Exact INPUT: amount = spend on origin for target USD tier
+# Columns: origin_chain | origin_token | target_usd | http | summary
+#
+# Captured by probing api.sushi.com (same URLs as sushi-bzz.sh / run-matrix.mjs).
+# Re-run locally: cd sushi-routes && node run-matrix.mjs
+
+gnosis	NATIVE	0.1	200	OK
+gnosis	NATIVE	1	200	OK
+gnosis	NATIVE	10	200	OK
+gnosis	NATIVE	100	200	OK
+gnosis	USDC	0.1	200	OK
+gnosis	USDC	1	200	OK
+gnosis	USDC	10	200	OK
+gnosis	USDC	100	200	OK
+gnosis	USDT	0.1	200	OK
+gnosis	USDT	1	200	OK
+gnosis	USDT	10	200	OK
+gnosis	USDT	100	200	OK

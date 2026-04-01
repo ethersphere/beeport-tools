@@ -64,3 +64,35 @@ Both matrices use the same **36 cells** (fixed BZZ out via `BZZ_PRICE_USD` when 
    Outputs are gitignored: `last-matrix-*-for-compare.txt`, `compare-relay-lifi.md`, `compare-relay-lifi.csv`.
 
 **Note:** “Better” here means **more cells with HTTP 200 + OK** for the same notional setup. Relay **`EXACT_INPUT`** is not comparable to LI.FI **`toAmount`** without a separate LI.FI `fromAmount` flow—keep `EXACT_OUTPUT` for a fair side-by-side.
+
+### `sushi-routes/`
+
+Probes **[Sushi Quote API v7](https://docs.sushi.com/api/examples/quote)** for **same-chain** swaps into **BZZ** (default **Gnosis, chain 100**). The API is **exact input**: you pass `amount` as token-in smallest units; the response includes **`assumedAmountOut`** for BZZ.
+
+**Not cross-chain:** `GET https://api.sushi.com/quote/v7/{chainId}` only routes on that chain. You cannot ask Sushi to deliver Gnosis BZZ from Ethereum in this endpoint—use **`relay-routes`** / **`lifi-routes`** for that. If you set `SUSHI_CHAINS=1` or `8453`, you must set **`BZZ_TOKEN_ETHEREUM`** / **`BZZ_TOKEN_BASE`** to a **BZZ (or wrapper) address valid on that chain**, or those chains are skipped.
+
+| File | Purpose |
+|------|--------|
+| `sushi-bzz.sh` | `matrix` — NATIVE / USDC / USDT × `$0.1`–`$100` spend tiers (same idea as Relay **exact input**); `pretty` — format saved JSON. |
+| `run-matrix.mjs` | Same matrix with **Node `fetch` only**: `node run-matrix.mjs` prints the matrix to **stdout**; optional `node run-matrix.mjs log.txt` also saves a copy. |
+| `sushi-cli-helpers.mjs` | Build quote URLs, native sizing via Sushi [Pricing API](https://docs.sushi.com/api/examples/pricing), summarize responses. |
+| `format-matrix-log.mjs` | Markdown + CSV from a matrix log. |
+
+Run locally:
+
+```bash
+cd sushi-routes
+./sushi-bzz.sh matrix                    # prints to terminal (add "| tee log.txt" only if you want a file)
+node run-matrix.mjs                    # same matrix, stdout only
+node run-matrix.mjs last-matrix-run.txt # stdout + save copy for format-matrix-log.mjs
+```
+
+Example quote (1 xDAI → BZZ on Gnosis):
+
+```bash
+curl -sS "https://api.sushi.com/quote/v7/100?tokenIn=0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE&tokenOut=0xdBF3Ea6F5beE45c02255B2c26a16F300502F68da&amount=1000000000000000000&maxSlippage=0.03"
+```
+
+Env: `SUSHI_API`, `SUSHI_QUOTE_DELAY`, `SUSHI_MAX_SLIPPAGE`, `SUSHI_CHAINS`, `SUSHI_MATRIX_VERBOSE=1`, `BZZ_TOKEN_ETHEREUM`, `BZZ_TOKEN_BASE`.
+
+Sample **Gnosis** run where all 12 cells succeeded: `sushi-routes/examples/gnosis-matrix-sample-run.txt`.
