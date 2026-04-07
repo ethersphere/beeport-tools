@@ -2,6 +2,9 @@
 /**
  * Helpers for lifi-bzz.sh — LI.FI GET /v1/quote/toAmount (exact output on destination).
  * Docs: https://docs.li.fi/api-reference/get-a-quote-for-a-token-transfer-1
+ *
+ * Optional denyBridges: set LIFI_DENY_BRIDGES to a comma-separated list of bridge keys (see GET /v1/tools).
+ * Unset or empty = do not send denyBridges (all bridges allowed unless LI.FI applies its own defaults).
  */
 import { readFileSync } from "node:fs";
 
@@ -27,13 +30,24 @@ function formatTokenAmount(rawStr, decimals) {
   return (neg ? "-" : "") + `${whole}.${fracS}`;
 }
 
-function buildToAmountUrl(base, params) {
+function buildToAmountUrl(base, params, options = {}) {
   const u = new URL(`${base.replace(/\/$/, "")}/v1/quote/toAmount`);
   for (const [k, v] of Object.entries(params)) {
     if (v === undefined || v === "") continue;
     u.searchParams.set(k, String(v));
   }
+  const denyBridges = options.denyBridges || [];
+  for (const b of denyBridges) {
+    if (b) u.searchParams.append("denyBridges", String(b));
+  }
   return u.toString();
+}
+
+/** Comma-separated bridge keys for repeated denyBridges query params. Unset or empty → []. */
+function denyBridgesFromEnv() {
+  const raw = process.env.LIFI_DENY_BRIDGES;
+  if (raw === undefined || raw.trim() === "") return [];
+  return raw.split(",").map((s) => s.trim()).filter(Boolean);
 }
 
 async function main() {
@@ -76,7 +90,7 @@ async function main() {
         order,
       };
       if (integrator) params.integrator = integrator;
-      console.log(buildToAmountUrl(base, params));
+      console.log(buildToAmountUrl(base, params, { denyBridges: denyBridgesFromEnv() }));
       break;
     }
     case "summarize-lifi-quote": {

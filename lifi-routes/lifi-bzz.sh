@@ -4,12 +4,14 @@
 # Docs: https://docs.li.fi/api-reference/get-a-quote-for-a-token-transfer-1
 #
 # Usage:
-#   ./lifi-bzz.sh matrix [--raw-dir DIR] [--user ADDR]
+#   ./lifi-bzz.sh matrix [--deny-bridges LIST] [--raw-dir DIR] [--user ADDR]
 #   ./lifi-bzz.sh pretty <file.json>   # pretty-print saved response
 #
 # Env: LIFI_API (default https://li.quest), LIFI_QUOTE_DELAY, BZZ_PRICE_USD, LIFI_SLIPPAGE (default 0.03),
 #      LIFI_ORDER (CHEAPEST|FASTEST, default CHEAPEST), LIFI_API_KEY (optional x-lifi-api-key),
-#      LIFI_MATRIX_VERBOSE=1 for full summary line + stepId, LIFI_INTEGRATOR (optional query param)
+#      LIFI_MATRIX_VERBOSE=1 for full summary line + stepId, LIFI_INTEGRATOR (optional query param),
+#      LIFI_DENY_BRIDGES — comma-separated bridge keys → repeated denyBridges= on the quote URL (optional).
+#      Same effect as matrix --deny-bridges LIST (CLI overrides env for that run when passed).
 
 set -u
 
@@ -80,9 +82,18 @@ summarize_lifi() {
 }
 
 cmd_matrix() {
-  local USER_ADDR="$DEFAULT_USER" RAW_DIR=""
+  local USER_ADDR="$DEFAULT_USER" RAW_DIR="" DENY_BRIDGES_CLI_SET=0
   while [[ $# -gt 0 ]]; do
     case "$1" in
+      --deny-bridges)
+        if [[ $# -lt 2 ]]; then
+          echo "error: --deny-bridges requires a list (comma-separated keys, or '' for none)" >&2
+          exit 1
+        fi
+        LIFI_DENY_BRIDGES="$2"
+        DENY_BRIDGES_CLI_SET=1
+        shift 2
+        ;;
       --raw-dir)
         RAW_DIR="$2"
         shift 2
@@ -97,11 +108,19 @@ cmd_matrix() {
         ;;
     esac
   done
+  if [[ "$DENY_BRIDGES_CLI_SET" -eq 1 ]]; then
+    export LIFI_DENY_BRIDGES
+  fi
   if [[ -n "$RAW_DIR" ]]; then
     mkdir -p "$RAW_DIR"
   fi
 
   echo "# LI.FI BZZ-on-Gnosis matrix | API=${LIFI_API} | endpoint=GET /v1/quote/toAmount | user=${USER_ADDR}"
+  if [[ -n "${LIFI_DENY_BRIDGES:-}" ]]; then
+    echo "# denyBridges=${LIFI_DENY_BRIDGES} (comma-separated → repeated query params; keys from LI.FI GET /v1/tools)"
+  else
+    echo "# denyBridges=(none — set LIFI_DENY_BRIDGES=relay,hop or use --deny-bridges relay to exclude bridges)"
+  fi
   echo "# toAmount=BZZ out (16 dec) | tiers \$0.1..\$100 via BZZ_PRICE_USD=${BZZ_PRICE_USD} | slippage=${LIFI_SLIPPAGE} | order=${LIFI_ORDER}"
   echo "# Columns: origin_chain | origin_token | target_usd | http | summary"
   echo ""
@@ -183,7 +202,7 @@ case "${1:-}" in
   *)
     echo "LI.FI BZZ (Gnosis) quote helper — /v1/quote/toAmount" >&2
     echo "" >&2
-    echo "  $0 matrix [--raw-dir DIR] [--user 0x...]" >&2
+    echo "  $0 matrix [--deny-bridges LIST] [--raw-dir DIR] [--user 0x...]" >&2
     echo "  $0 pretty <file.json>" >&2
     exit 1
     ;;

@@ -35,6 +35,7 @@ Same **matrix shape** as `relay-routes`, but quotes use **LI.FI** [`GET /v1/quot
 Environment variables:
 
 - `LIFI_API` (default `https://li.quest`), `LIFI_QUOTE_DELAY`, `BZZ_PRICE_USD`, `LIFI_SLIPPAGE` (default `0.03`), `LIFI_ORDER` (`CHEAPEST` or `FASTEST`)
+- `LIFI_DENY_BRIDGES` — optional comma-separated bridge keys → repeated `denyBridges` query params ([LI.FI quote API](https://docs.li.fi/api-reference/get-a-quote-for-a-token-transfer-1); catalog: `GET /v1/tools`). **Omit or leave empty** to not restrict bridges. Example: `LIFI_DENY_BRIDGES=relay` excludes [Relay.link](https://relay.link/). Matrix CLI: `./lifi-bzz.sh matrix --deny-bridges relay` (overrides env for that run).
 - `LIFI_API_KEY` — optional `x-lifi-api-key` header ([partner portal](https://portal.li.fi/))
 - `LIFI_MATRIX_VERBOSE=1` — print LI.FI summary line + `stepId=…`
 - `LIFI_INTEGRATOR` — optional `integrator` query param
